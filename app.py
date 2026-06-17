@@ -18,7 +18,7 @@ from agent import run_agent
 from utils.data_loader import get_example_wardrobe, get_empty_wardrobe
 
 
-# ── query handler ─────────────────────────────────────────────────────────────
+# query handler
 
 def handle_query(user_query: str, wardrobe_choice: str) -> tuple[str, str, str]:
     """
@@ -47,7 +47,7 @@ def handle_query(user_query: str, wardrobe_choice: str) -> tuple[str, str, str]:
     return "Agent not yet implemented.", "", ""
 
 
-# ── interface ─────────────────────────────────────────────────────────────────
+# interface
 
 EXAMPLE_QUERIES = [
     "vintage graphic tee under $30",
