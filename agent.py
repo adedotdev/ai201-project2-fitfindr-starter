@@ -18,10 +18,58 @@ Usage (once implemented):
     print(result["error"])   # None on success
 """
 
+import re
+
 from tools import search_listings, suggest_outfit, create_fit_card
 
 
-# ── session state ─────────────────────────────────────────────────────────────
+# query parsing
+
+_FILLER_PATTERNS = [
+    r"\bi'?m looking for\b",
+    r"\bi am looking for\b",
+    r"\blooking for\b",
+    r"\bi want\b",
+    r"\bi need\b",
+    r"\bfind me\b",
+    r"\bsearching for\b",
+    r"\bsearch for\b",
+    r"\bunder\b",
+]
+
+
+def _parse_query(query: str) -> dict:
+    """
+    Extract description, size, and max_price from a natural language query
+    using regex. max_price and size are pulled from the whole query (they're
+    unambiguous signals); description is built from the first sentence only,
+    since later sentences tend to be wardrobe context rather than the ask
+    (e.g. "...under $30. I mostly wear baggy jeans...").
+    """
+    max_price = None
+    price_match = re.search(r"\$\s?(\d+(?:\.\d+)?)", query)
+    if price_match:
+        max_price = float(price_match.group(1))
+
+    size = None
+    size_match = re.search(r"\bsize\s*[:\-]?\s*([A-Za-z0-9/]+)", query, flags=re.IGNORECASE)
+    if size_match:
+        size = size_match.group(1)
+
+    first_sentence = re.split(r"[.!?]", query, maxsplit=1)[0]
+    description = first_sentence
+    if price_match and price_match.start() < len(first_sentence):
+        description = re.sub(re.escape(price_match.group(0)), "", description)
+    if size_match and size_match.start() < len(first_sentence):
+        description = re.sub(re.escape(size_match.group(0)), "", description, flags=re.IGNORECASE)
+    for pattern in _FILLER_PATTERNS:
+        description = re.sub(pattern, "", description, flags=re.IGNORECASE)
+    description = re.sub(r"\s+", " ", description).strip(" .,")
+
+    return {"description": description, "size": size, "max_price": max_price}
+
+
+# session state
 
 def _new_session(query: str, wardrobe: dict) -> dict:
     """
@@ -45,7 +93,7 @@ def _new_session(query: str, wardrobe: dict) -> dict:
     }
 
 
-# ── planning loop ─────────────────────────────────────────────────────────────
+# planning loop
 
 def run_agent(query: str, wardrobe: dict) -> dict:
     """
@@ -92,13 +140,43 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     Before writing code, complete the Planning Loop and State Management sections
     of planning.md — your implementation should match what you described there.
     """
-    # TODO: implement the planning loop
     session = _new_session(query, wardrobe)
-    session["error"] = "Planning loop not yet implemented."
+
+    session["parsed"] = _parse_query(query)
+
+    session["search_results"] = search_listings(
+        description=session["parsed"]["description"],
+        size=session["parsed"]["size"],
+        max_price=session["parsed"]["max_price"],
+    )
+
+    if not session["search_results"]:
+        constraints = []
+        if session["parsed"]["size"]:
+            constraints.append(f"size {session['parsed']['size']}")
+        if session["parsed"]["max_price"] is not None:
+            constraints.append(f"under ${session['parsed']['max_price']:.0f}")
+        constraint_text = f" ({', '.join(constraints)})" if constraints else ""
+        session["error"] = (
+            f"No listings matched '{session['parsed']['description']}'{constraint_text}. "
+            "Try raising your price limit, removing the size filter, or using broader keywords."
+        )
+        return session
+
+    session["selected_item"] = session["search_results"][0]
+
+    session["outfit_suggestion"] = suggest_outfit(
+        session["selected_item"], session["wardrobe"]
+    )
+
+    session["fit_card"] = create_fit_card(
+        session["outfit_suggestion"], session["selected_item"]
+    )
+
     return session
 
 
-# ── CLI test ──────────────────────────────────────────────────────────────────
+# CLI test
 
 if __name__ == "__main__":
     from utils.data_loader import get_example_wardrobe, get_empty_wardrobe
