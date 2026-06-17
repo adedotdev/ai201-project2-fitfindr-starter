@@ -19,7 +19,6 @@ from utils.data_loader import get_example_wardrobe, get_empty_wardrobe
 
 
 # query handler
-
 def handle_query(user_query: str, wardrobe_choice: str) -> tuple[str, str, str]:
     """
     Called by Gradio when the user submits a query.
@@ -68,7 +67,6 @@ def handle_query(user_query: str, wardrobe_choice: str) -> tuple[str, str, str]:
 
 
 # interface
-
 EXAMPLE_QUERIES = [
     "vintage graphic tee under $30",
     "90s track jacket in size M",

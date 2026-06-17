@@ -2,8 +2,7 @@ from tools import search_listings, suggest_outfit, create_fit_card
 from utils.data_loader import get_example_wardrobe, get_empty_wardrobe
 
 
-# ── search_listings ──────────────────────────────────────────────────────────
-
+# search_listings
 def test_search_returns_results():
     results = search_listings("vintage graphic tee", size=None, max_price=50)
     assert isinstance(results, list)
@@ -26,8 +25,7 @@ def test_search_size_filter():
     assert all("m" in item["size"].lower() for item in results)
 
 
-# ── suggest_outfit ───────────────────────────────────────────────────────────
-
+# suggest_outfit
 def test_suggest_outfit_with_wardrobe_returns_nonempty_string():
     item = search_listings("vintage graphic tee", size=None, max_price=50)[0]
     outfit = suggest_outfit(item, get_example_wardrobe())
@@ -42,8 +40,7 @@ def test_suggest_outfit_empty_wardrobe_does_not_crash():
     assert outfit.strip() != ""
 
 
-# ── create_fit_card ──────────────────────────────────────────────────────────
-
+# create_fit_card
 def test_create_fit_card_empty_outfit_returns_fallback_string():
     item = search_listings("vintage graphic tee", size=None, max_price=50)[0]
     card = create_fit_card("", item)

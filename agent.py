@@ -24,7 +24,6 @@ from tools import search_listings, suggest_outfit, create_fit_card
 
 
 # query parsing
-
 _FILLER_PATTERNS = [
     r"\bi'?m looking for\b",
     r"\bi am looking for\b",
@@ -70,7 +69,6 @@ def _parse_query(query: str) -> dict:
 
 
 # session state
-
 def _new_session(query: str, wardrobe: dict) -> dict:
     """
     Initialize and return a fresh session dict for one user interaction.
@@ -94,7 +92,6 @@ def _new_session(query: str, wardrobe: dict) -> dict:
 
 
 # planning loop
-
 def run_agent(query: str, wardrobe: dict) -> dict:
     """
     Main agent entry point. Runs the FitFindr planning loop for a single
@@ -177,7 +174,6 @@ def run_agent(query: str, wardrobe: dict) -> dict:
 
 
 # CLI test
-
 if __name__ == "__main__":
     from utils.data_loader import get_example_wardrobe, get_empty_wardrobe
 
