@@ -138,12 +138,16 @@ Write out what a full user interaction looks like from start to finish — tool 
 
 **Step 1:**
 <!-- What does the agent do first? Which tool is called? With what input? -->
+The agent calls search_listings() with the item description, size, and max price as inputs retrieved from the query. This function parses through listings.json to filter items that satisfy the given parameters, and returns a list containing 3 matching listings sorted by relevance. If there are no matches found, an empty list is returned. The agent tells the user what to try differently and stops.
 
 **Step 2:**
 <!-- What happens next? What was returned from step 1? What tool is called now? -->
+The agent picks the top result from the list returned in step 1, then calls suggest_outfit() with the user's current wardrobe and the new item as inputs. This function suggests one or more outfit combinations.
 
 **Step 3:**
 <!-- Continue until the full interaction is complete -->
+The agent picks the top outfit suggestion from the previous step, then calls create_fit_card which takes the suggested outfit and the new item as input, and returns an social media-ready message that pairs the item and the outfit. 
 
 **Final output to user:**
 <!-- What does the user actually see at the end? -->
+The user sees the suggested outfit from the agent and based on if the user accepts this suggestion or not, they see the card rendered by from the create_fit_card tool call.
